@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HELLO WASM</title>
+    <style>
+        html {
+            font-family: Arial, serif;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="wasm_exec.js"></script>
+    <script>
+        let wasmLoaded = false;
+        const go = new Go();
+        WebAssembly.instantiateStreaming(
+            fetch("main.wasm"),
+            go.importObject)
+            .then((result) => {
+                go.run(result.instance);
+                wasmLoaded = true;
+            }
+            );
+
+        async function GetQuote() { // Available in console
+            try {
+                const response = await GoWebRequestFunc("https://api.quotable.io/quotes/random")
+                const message = await response.json()
+                console.log(message)
+            } catch (err) {
+                console.error('Caught exception', err)
+            }
+        }
+
+        async function DisplayQuote() {
+            try {
+                const response = await GoWebRequestFunc("https://api.quotable.io/quotes/random")
+                const message = await response.json()
+                const q = message[0]
+                document.getElementById('quote').innerHTML = q.content
+                document.getElementById('author').innerHTML = q.author
+            } catch (err) {
+                console.error('Caught exception', err)
+            }
+        }
+    </script>
+    <h1>HELLO WASM</h1>
+    <p>You can call <code>hellowasm()</code> in the console or push this button:</p>
+    <div>
+        <button onclick="document.getElementById('hello').innerHTML = hellowasm()">Call hellowasm()</button>
+        <p id="hello"></p>
+    </div>
+
+    <h1>Get qoute</h1>
+    <h2>To console</h2>
+    <div>
+        <button onclick="GetQuote()">Send request for qoute</button> (See console for result)
+    </div>
+    <h2>To page</h2>
+    <button onclick="DisplayQuote()">Get qoute</button>
+    <div style="margin: 30pt;">
+        <p>
+            <quote id="quote"></quote>
+            <cite id="author"></cite>
+        </p>
+    </div>
+
+    <h2>Content updated directly from WASM</h2>
+    <p id="myParagraph">Updates from the WASM directly when loaded.</p>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+
+# This is a Taskfile. See https://taskfile.dev
+# `brew install go-task` to install task runner or `go install github.com/go-task/task/v3/cmd/task@latest`
+# `task --list` to list all tasks
+# `task <taskname>` to run a task
+
+version: '3'
+
+tasks:
+  setup:
+    desc: Build binaries
+    run: once
+    cmds:
+      - mkdir -p static
+      - cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" static
+      - cp index.html static
+
+  build:
+    desc: Build wasm and webserver
+    deps:
+      - setup
+    cmds:
+      - GOOS=js GOARCH=wasm go build -o main.wasm
+      # This requires wasm-opt from `brew install binaryen`
+      # - if [ $(command -v wasm-opt) ]; then wasm-opt main.wasm --enable-bulk-memory -Oz -o static/main.wasm; else cp main.wasm static; fi
+      # or just to save some dev time and not optimize, even with wasm-opt installed 
+      - mv main.wasm static
+      - go build -o websrv webserver/webserver.go
+
+  clean:
+    desc: Cleanup
+    cmds:
+      - rm -rf static main.wasm websrv
+
+  container:
+    desc: Build a container
+    cmds:
+      - docker build --pull -t hilli/wasm-test .
+
+  container-run:
+    desc: Run the container locally
+    deps:
+      - container
+    cmds:
+      - docker run --rm -p 3000:3000 hilli/wasm-test
+
+  default:
+    desc: Run the things
+    deps:
+      - build
+    cmds:
+      - ./websrv
