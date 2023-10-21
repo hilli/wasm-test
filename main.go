@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"syscall/js"
+	"time"
 )
 
 var (
@@ -19,6 +20,7 @@ func main() {
 	js.Global().Set("GoWebRequestFunc", GoWebRequestFunc())
 	// Update the DOM content from WASM
 	updateDOMContent()
+	go updateTime()
 	// Wait for ever
 	select {}
 }
@@ -28,10 +30,21 @@ func hello(this js.Value, p []js.Value) interface{} {
 	return js.ValueOf(fmt.Sprintf("Hello from Go WASM! Counter is: %d", counter))
 }
 
+// Simple update of content
 func updateDOMContent() {
 	document := js.Global().Get("document")
 	element := document.Call("getElementById", "myParagraph")
-	element.Set("innerText", "Updated content directly from Go WASM after load!")
+	element.Set("innerText", "This line was updated directly from Go WASM after load!")
+}
+
+// Continuous updating content on the page
+func updateTime() {
+	for {
+		document := js.Global().Get("document")
+		element := document.Call("getElementById", "time")
+		element.Set("innerText", time.Now().Format(time.RFC3339))
+		time.Sleep(time.Second)
+	}
 }
 
 func GoWebRequestFunc() js.Func {

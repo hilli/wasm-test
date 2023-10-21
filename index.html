@@ -23,7 +23,7 @@
                 go.run(result.instance);
                 wasmLoaded = true;
             }
-            );
+        );
 
         async function GetQuote() { // Available in console
             try {
@@ -41,35 +41,37 @@
                 const message = await response.json()
                 const q = message[0]
                 document.getElementById('quote').innerHTML = q.content
-                document.getElementById('author').innerHTML = q.author
+                document.getElementById('author').innerHTML = "－ " + q.author
             } catch (err) {
                 console.error('Caught exception', err)
             }
         }
     </script>
     <h1>HELLO WASM</h1>
-    <p>You can call <code>hellowasm()</code> in the console or push this button:</p>
+    <p>You can call <code>hellowasm()</code> in the console or push this button. The function is registred as a JS function in Go:</p>
     <div>
         <button onclick="document.getElementById('hello').innerHTML = hellowasm()">Call hellowasm()</button>
         <p id="hello"></p>
     </div>
 
     <h1>Get qoute</h1>
+    Inline JS functions that send a URL to a function in Go that makes an API call, returns the data as JSON. Resulting JSON in the console or on this pages.
     <h2>To console</h2>
     <div>
-        <button onclick="GetQuote()">Send request for qoute</button> (See console for result)
+        <button onclick="GetQuote()">Send request for qoute</button> (See console for JSON blob)
     </div>
     <h2>To page</h2>
     <button onclick="DisplayQuote()">Get qoute</button>
     <div style="margin: 30pt;">
         <p>
-            <quote id="quote"></quote>
+            <quote id="quote"></quote><br>
             <cite id="author"></cite>
         </p>
     </div>
 
-    <h2>Content updated directly from WASM</h2>
-    <p id="myParagraph">Updates from the WASM directly when loaded.</p>
+    <h1>Content updated directly from WASM</h1>
+    <p id="myParagraph">Updates from the WASM directly when it is done loading - So if you see this line, that ain't working.</p>
+    <p>The time, updated from a thread in WASM: <span id="time"></span></p>
 </body>
 
 </html>
